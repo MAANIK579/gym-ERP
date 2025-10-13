@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Member {
+  id               Int       @id @default(autoincrement())
+  fullName         String
+  email            String    @unique
+  phoneNumber      String?
+  joinDate         DateTime  @default(now())
+  status           String    @default("Active") // "Active", "Frozen", "Expired"
+  membershipPlanId Int?
+  plan             MembershipPlan? @relation(fields: [membershipPlanId], references: [id])
+  invoices         Invoice[]
+  bookings         Booking[]
+}
+
+model MembershipPlan {
+  id            Int      @id @default(autoincrement())
+  name          String
+  price         Float
+  durationDays  Int
+  members       Member[]
+}
+
+model Invoice {
+  id              Int      @id @default(autoincrement())
+  amount          Float
+  status          String   @default("Pending") // "Pending", "Paid", "Overdue"
+  dueDate         DateTime?
+  razorpayOrderId String?
+  memberId        Int
+  member          Member   @relation(fields: [memberId], references: [id])
+}
+
+model Class {
+  id          Int       @id @default(autoincrement())
+  title       String
+  trainerName String?
+  startTime   DateTime
+  endTime     DateTime
+  capacity    Int
+  bookings    Booking[]
+}
+
+model Booking {
+  id           Int      @id @default(autoincrement())
+  bookingTime  DateTime @default(now())
+  classId      Int
+  memberId     Int
+  class        Class    @relation(fields: [classId], references: [id])
+  member       Member   @relation(fields: [memberId], references: [id])
+
+  @@unique([classId, memberId]) // A member can't book the same class twice
+}
