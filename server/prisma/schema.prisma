@@ -19,6 +19,8 @@ model Member {
   plan             MembershipPlan? @relation(fields: [membershipPlanId], references: [id])
   invoices         Invoice[]
   bookings         Booking[]
+  workoutPlans     WorkoutPlan[]
+  dietPlans        DietPlan[]
 }
 
 model MembershipPlan {
@@ -57,7 +59,7 @@ model Booking {
   class        Class    @relation(fields: [classId], references: [id])
   member       Member   @relation(fields: [memberId], references: [id])
 
-  @@unique([classId, memberId]) // A member can't book the same class twice
+  @@unique([classId, memberId])
 }
 
 model User {
@@ -71,9 +73,8 @@ model Equipment {
   id               Int      @id @default(autoincrement())
   name             String
   purchaseDate     DateTime?
-  status           String   @default("Operational") // e.g., "Operational", "Under Maintenance", "Out of Order"
+  status           String   @default("Operational")
   lastMaintenance  DateTime?
-
   maintenanceLogs  MaintenanceLog[]
 }
 
@@ -83,4 +84,20 @@ model MaintenanceLog {
   performedOn DateTime @default(now())
   equipmentId Int
   equipment   Equipment @relation(fields: [equipmentId], references: [id])
+}
+
+model WorkoutPlan {
+  id        Int      @id @default(autoincrement())
+  details   String   @db.Text
+  createdAt DateTime @default(now())
+  memberId  Int
+  member    Member   @relation(fields: [memberId], references: [id])
+}
+
+model DietPlan {
+  id        Int      @id @default(autoincrement())
+  details   String   @db.Text
+  createdAt DateTime @default(now())
+  memberId  Int
+  member    Member   @relation(fields: [memberId], references: [id])
 }

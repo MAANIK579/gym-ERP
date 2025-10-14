@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import moment from 'moment'; // We'll use moment to format dates
+import moment from 'moment';
 
 const InvoicesPage = () => {
     const [invoices, setInvoices] = useState([]);
@@ -23,13 +23,19 @@ const InvoicesPage = () => {
 
     const handleMarkAsPaid = async (invoiceId) => {
         try {
+            // Call the backend API to mark as paid
             await axios.put(`http://localhost:5000/api/invoices/${invoiceId}/pay`);
+            
             // Update the status in the UI without a full refresh
             setInvoices(invoices.map(inv => 
                 inv.id === invoiceId ? { ...inv, status: 'Paid' } : inv
             ));
+            
+            // Show success message
+            alert(`Invoice #${invoiceId} marked as Paid successfully!`);
         } catch (error) {
-            alert('Failed to mark as paid.');
+            console.error('Failed to mark as paid:', error);
+            alert('Failed to mark invoice as paid. Please try again.');
         }
     };
 
@@ -39,12 +45,14 @@ const InvoicesPage = () => {
                 return <span className="bg-green-200 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">{status}</span>;
             case 'Pending':
                 return <span className="bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">{status}</span>;
+            case 'Overdue':
+                return <span className="bg-red-200 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">{status}</span>;
             default:
                 return <span className="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold">{status}</span>;
         }
     };
 
-    if (isLoading) return <p>Loading invoices...</p>;
+    if (isLoading) return <p className="text-white">Loading invoices...</p>;
 
     return (
         <div>
@@ -53,6 +61,7 @@ const InvoicesPage = () => {
                 <table className="min-w-full leading-normal">
                     <thead className="bg-primary-dark">
                         <tr>
+                            <th className="px-5 py-3 border-b-2 border-gray-700 text-left text-xs font-semibold uppercase text-gray-200">Invoice ID</th>
                             <th className="px-5 py-3 border-b-2 border-gray-700 text-left text-xs font-semibold uppercase text-gray-200">Member</th>
                             <th className="px-5 py-3 border-b-2 border-gray-700 text-left text-xs font-semibold uppercase text-gray-200">Amount</th>
                             <th className="px-5 py-3 border-b-2 border-gray-700 text-left text-xs font-semibold uppercase text-gray-200">Date</th>
@@ -62,18 +71,36 @@ const InvoicesPage = () => {
                     </thead>
                     <tbody>
                         {invoices.map(invoice => (
-                            <tr key={invoice.id}>
-                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">{invoice.member.fullName}</td>
-                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">₹{invoice.amount}</td>
-                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">{moment(invoice.dueDate).format('DD MMM YYYY')}</td>
-                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">{getStatusChip(invoice.status)}</td>
+                            <tr key={invoice.id} className="hover:bg-gray-800 transition-colors">
                                 <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">
-                                    {invoice.status === 'Pending' && (
+                                    #{invoice.id}
+                                </td>
+                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">
+                                    {invoice.member.fullName}
+                                </td>
+                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm font-semibold">
+                                    ₹{invoice.amount.toLocaleString()}
+                                </td>
+                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">
+                                    {moment(invoice.dueDate).format('DD MMM YYYY')}
+                                </td>
+                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">
+                                    {getStatusChip(invoice.status)}
+                                </td>
+                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">
+                                    {invoice.status === 'Pending' ? (
                                         <button 
-                                            onClick={() => alert(`Payment for Invoice #${invoice.id} initiated!`)}
-                                            className="bg-accent hover:bg-accent-hover text-white text-xs font-bold py-1 px-3 rounded">
+                                            onClick={() => handleMarkAsPaid(invoice.id)}
+                                            className="bg-accent hover:bg-accent-hover text-white text-xs font-bold py-2 px-4 rounded transition-colors">
                                             Pay Now
                                         </button>
+                                    ) : (
+                                        <span className="text-green-400 text-xs font-semibold flex items-center gap-1">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Paid
+                                        </span>
                                     )}
                                 </td>
                             </tr>
