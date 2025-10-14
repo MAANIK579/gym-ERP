@@ -27,22 +27,22 @@ const MemberList = () => {
 
     return (
         <div className="p-4">
-            <h1 className="text-2xl font-bold mb-4">Gym Members</h1>
+            <h1 className="text-2xl font-bold mb-4 text-white">Gym Members</h1>
             <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border">
-                    <thead className="bg-gray-200">
+                <table className="min-w-full bg-secondary-dark border border-gray-700">
+                    <thead className="bg-primary-dark">
                         <tr>
-                            <th className="py-2 px-4 border">Full Name</th>
-                            <th className="py-2 px-4 border">Email</th>
-                            <th className="py-2 px-4 border">Status</th>
+                            <th className="py-2 px-4 border border-gray-700 text-gray-200">Full Name</th>
+                            <th className="py-2 px-4 border border-gray-700 text-gray-200">Email</th>
+                            <th className="py-2 px-4 border border-gray-700 text-gray-200">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {members.map((member) => (
                             <tr key={member.id} className="text-center">
-                                <td className="py-2 px-4 border">{member.fullName}</td>
-                                <td className="py-2 px-4 border">{member.email}</td>
-                                <td className="py-2 px-4 border">
+                                <td className="py-2 px-4 border border-gray-700 text-white">{member.fullName}</td>
+                                <td className="py-2 px-4 border border-gray-700 text-white">{member.email}</td>
+                                <td className="py-2 px-4 border border-gray-700">
                                     <span className="bg-green-200 text-green-800 px-2 py-1 rounded-full text-sm">
                                         {member.status}
                                     </span>

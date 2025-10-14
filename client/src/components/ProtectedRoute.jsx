@@ -1,22 +1,22 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import Navbar from './Navbar'; // We'll show the Navbar only for logged-in users
+import Navbar from './Navbar';
 
 const ProtectedRoute = () => {
-    // Check if user data exists in local storage
     const user = JSON.parse(localStorage.getItem('user'));
 
     if (!user) {
-        // If no user, redirect to the login page
         return <Navigate to="/login" />;
     }
 
-    // If user is logged in, show the Navbar and the requested page
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="flex flex-col min-h-screen bg-primary-dark">
             <Navbar />
-            <main className="container mx-auto p-4">
-                <Outlet /> {/* This will render the child route element */}
+
+            {/* CRITICAL CHANGE: We removed 'container mx-auto' from this <main> tag.
+                This allows the page content below to be full-width by default. */}
+            <main className="flex-grow p-4 md:p-6">
+                <Outlet />
             </main>
         </div>
     );

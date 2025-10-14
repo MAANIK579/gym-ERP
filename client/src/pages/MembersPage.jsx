@@ -4,6 +4,7 @@ import AddMemberForm from "../components/AddMemberForm"; // Import the form
 import Modal from "../components/Modal"; // Import Modal
 import EditMemberForm from "../components/EditMemberForm"; // Import Edit Form
 import AssignPlanModal from "../components/AssignPlanModal";
+import SetPasswordModal from "../components/SetPasswordModal";
 
 const MembersPage = () => {
   const [members, setMembers] = useState([]);
@@ -12,6 +13,7 @@ const MembersPage = () => {
   const [editingMember, setEditingMember] = useState(null);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -74,34 +76,37 @@ const MembersPage = () => {
     setEditingMember(null); // Clear the editing state
   };
 
+  const openPasswordModal = (member) => {
+    setSelectedMember(member); // We can reuse the 'selectedMember' state
+    setIsPasswordModalOpen(true);
+  };
+
   if (isLoading) {
     return <div className="text-center p-8">Loading members...</div>;
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">
-        Member Management
-      </h1>
+    <div className="p-6 bg-secondary-dark container mx-auto">
+      <h1 className="text-3xl font-bold mb-6 text-white">Member Management</h1>
 
       {/* Render the AddMemberForm component and pass the handler function as a prop */}
       <AddMemberForm onMemberAdded={handleMemberAdded} />
 
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+      <div className="bg-secondary-dark shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full leading-normal">
           {/* ... keep the rest of the table code exactly the same ... */}
-          <thead className="bg-gray-200">
+          <thead className="bg-primary-dark">
             <tr>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-700 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
                 Name
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-700 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
                 Email
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-700 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-5 py-3 border-b-2 border-gray-700 text-left text-xs font-semibold text-gray-200 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -109,13 +114,13 @@ const MembersPage = () => {
           <tbody>
             {members.map((member) => (
               <tr key={member.id}>
-                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">
                   {member.fullName}
                 </td>
-                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">
                   {member.email}
                 </td>
-                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">
                   <span className="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
                     <span
                       aria-hidden
@@ -124,7 +129,7 @@ const MembersPage = () => {
                     <span className="relative">{member.status}</span>
                   </span>
                 </td>
-                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm whitespace-nowrap">
                   <button
                     onClick={() => openAssignModal(member)}
                     className="text-indigo-600 hover:text-indigo-900 mr-4"
@@ -136,6 +141,12 @@ const MembersPage = () => {
                     className="text-indigo-600 hover:text-indigo-900 mr-4"
                   >
                     Edit
+                  </button>
+                  <button
+                    onClick={() => openPasswordModal(member)}
+                    className="text-yellow-400 hover:text-yellow-300 mr-4"
+                  >
+                    Set Password
                   </button>
                   <button
                     onClick={() => handleDelete(member.id)}
@@ -165,6 +176,11 @@ const MembersPage = () => {
           onFinished={handleMemberUpdated}
         />
       </Modal>
+      <SetPasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        member={selectedMember}
+      />
     </div>
   );
 };

@@ -41,11 +41,11 @@ const AssignPlanModal = ({ isOpen, onClose, member, onPlanAssigned }) => {
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={`Assign Plan to ${member.fullName}`}>
             <div className="mb-4">
-                <label className="block text-gray-700 font-semibold mb-2">Select Membership Plan</label>
+                <label className="block text-gray-200 font-semibold mb-2">Select Membership Plan</label>
                 <select
                     value={selectedPlanId}
                     onChange={(e) => setSelectedPlanId(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-secondary-dark text-white focus:outline-none focus:ring-2 focus:ring-accent"
                 >
                     {plans.map(plan => (
                         <option key={plan.id} value={plan.id}>
@@ -56,7 +56,7 @@ const AssignPlanModal = ({ isOpen, onClose, member, onPlanAssigned }) => {
             </div>
             <button
                 onClick={handleSubmit}
-                className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">
+                className="w-full bg-accent text-white font-bold py-2 px-4 rounded-lg hover:bg-accent-hover">
                 Assign Plan & Generate Invoice
             </button>
         </Modal>

@@ -48,30 +48,30 @@ const InvoicesPage = () => {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">Invoices</h1>
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+            <h1 className="text-3xl font-bold mb-6 text-blue-500">Invoices</h1>
+            <div className="bg-secondary-dark shadow-md rounded-lg overflow-hidden">
                 <table className="min-w-full leading-normal">
-                    <thead className="bg-gray-200">
+                    <thead className="bg-primary-dark">
                         <tr>
-                            <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase">Member</th>
-                            <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase">Amount</th>
-                            <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase">Date</th>
-                            <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase">Status</th>
-                            <th className="px-5 py-3 border-b-2 text-left text-xs font-semibold uppercase">Action</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-700 text-left text-xs font-semibold uppercase text-gray-200">Member</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-700 text-left text-xs font-semibold uppercase text-gray-200">Amount</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-700 text-left text-xs font-semibold uppercase text-gray-200">Date</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-700 text-left text-xs font-semibold uppercase text-gray-200">Status</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-700 text-left text-xs font-semibold uppercase text-gray-200">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {invoices.map(invoice => (
                             <tr key={invoice.id}>
-                                <td className="px-5 py-5 border-b bg-white text-sm">{invoice.member.fullName}</td>
-                                <td className="px-5 py-5 border-b bg-white text-sm">₹{invoice.amount}</td>
-                                <td className="px-5 py-5 border-b bg-white text-sm">{moment(invoice.dueDate).format('DD MMM YYYY')}</td>
-                                <td className="px-5 py-5 border-b bg-white text-sm">{getStatusChip(invoice.status)}</td>
-                                <td className="px-5 py-5 border-b bg-white text-sm">
+                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">{invoice.member.fullName}</td>
+                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">₹{invoice.amount}</td>
+                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">{moment(invoice.dueDate).format('DD MMM YYYY')}</td>
+                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">{getStatusChip(invoice.status)}</td>
+                                <td className="px-5 py-5 border-b border-gray-700 bg-secondary-dark text-white text-sm">
                                     {invoice.status === 'Pending' && (
                                         <button 
                                             onClick={() => alert(`Payment for Invoice #${invoice.id} initiated!`)}
-                                            className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded">
+                                            className="bg-accent hover:bg-accent-hover text-white text-xs font-bold py-1 px-3 rounded">
                                             Pay Now
                                         </button>
                                     )}

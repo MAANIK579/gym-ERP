@@ -47,4 +47,39 @@ router.post('/login', async (req, res) => {
     res.json({ msg: 'Login successful!', user: { id: user.id, email: user.email } });
 });
 
+router.put('/change-password', async (req, res) => {
+    const { userId, currentPassword, newPassword } = req.body;
+
+    if (!userId || !currentPassword || !newPassword) {
+        return res.status(400).json({ msg: 'Please provide all required fields.' });
+    }
+
+    try {
+        const user = await prisma.user.findUnique({ where: { id: parseInt(userId) } });
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found.' });
+        }
+
+        // Verify the current password
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ msg: 'Incorrect current password.' });
+        }
+
+        // Hash the new password and update it
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        await prisma.user.update({
+            where: { id: parseInt(userId) },
+            data: { password: hashedPassword },
+        });
+
+        res.json({ msg: 'Password updated successfully!' });
+
+    } catch (error) {
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
+
 export default router;

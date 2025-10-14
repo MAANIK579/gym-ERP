@@ -43,17 +43,17 @@ const BookingModal = ({ isOpen, onClose, selectedClass, onBookingConfirmed }) =>
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={`Book Class: ${selectedClass.title}`}>
-            <div className="mb-4">
+            <div className="mb-4 text-gray-200">
                 <p><strong>Trainer:</strong> {selectedClass.trainerName || 'N/A'}</p>
                 <p><strong>Time:</strong> {moment(selectedClass.start).format('lll')} - {moment(selectedClass.end).format('LT')}</p>
             </div>
             <div className="mb-4">
-                <label htmlFor="member" className="block text-gray-700 font-semibold mb-2">Select Member to Book</label>
+                <label htmlFor="member" className="block text-gray-200 font-semibold mb-2">Select Member to Book</label>
                 <select
                     id="member"
                     value={selectedMemberId}
                     onChange={(e) => setSelectedMemberId(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-secondary-dark text-white focus:outline-none focus:ring-2 focus:ring-accent"
                 >
                     {members.map(member => (
                         <option key={member.id} value={member.id}>{member.fullName}</option>
@@ -62,7 +62,7 @@ const BookingModal = ({ isOpen, onClose, selectedClass, onBookingConfirmed }) =>
             </div>
             <button
                 onClick={handleBooking}
-                className="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700"
+                className="w-full bg-accent text-white font-bold py-2 px-4 rounded-lg hover:bg-accent-hover"
             >
                 Confirm Booking
             </button>

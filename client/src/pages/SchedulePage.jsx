@@ -43,12 +43,12 @@ const SchedulePage = () => {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">Class Schedule</h1>
+            <h1 className="text-3xl font-bold mb-6 text-blue-500">Class Schedule</h1>
             {/* Now this line will work correctly */}
             <AddClassForm onClassAdded={handleClassAdded} />
             
-            <div className="bg-white p-4 rounded-lg shadow-md mt-6">
-                 {isLoading ? ( <p>Loading calendar...</p> ) : (
+            <div className="bg-secondary-dark p-4 rounded-lg shadow-md mt-6">
+                 {isLoading ? ( <p className="text-white">Loading calendar...</p> ) : (
                     <ClassCalendar classes={classes} onSelectEvent={handleSelectClass} />
                 )}
             </div>

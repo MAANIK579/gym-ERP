@@ -8,6 +8,10 @@ import planRoutes from './routes/plans.js';
 import invoiceRoutes from './routes/invoices.js';
 import reportRoutes from './routes/reports.js';
 import authRoutes from './routes/auth.js';
+import equipmentRoutes from './routes/equipment.js';
+import memberAuthRoutes from './routes/memberAuth.js';
+import myProfileRoutes from './routes/myProfile.js';
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,6 +28,9 @@ app.use('/api/plans', planRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/reports', reportRoutes); // 3. USE the report routes
 app.use('/api/auth', authRoutes); 
+app.use('/api/equipment', equipmentRoutes);
+app.use('/api/member-auth', memberAuthRoutes);
+app.use('/api/my-profile', myProfileRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
