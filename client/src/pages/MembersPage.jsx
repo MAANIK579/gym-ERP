@@ -3,12 +3,15 @@ import axios from "axios";
 import AddMemberForm from "../components/AddMemberForm"; // Import the form
 import Modal from "../components/Modal"; // Import Modal
 import EditMemberForm from "../components/EditMemberForm"; // Import Edit Form
+import AssignPlanModal from "../components/AssignPlanModal";
 
 const MembersPage = () => {
   const [members, setMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -43,6 +46,18 @@ const MembersPage = () => {
       }
     }
   };
+
+  const openAssignModal = (member) => {
+    setSelectedMember(member);
+    setIsAssignModalOpen(true);
+  };
+  const handlePlanAssigned = () => {
+    setIsAssignModalOpen(false);
+    setSelectedMember(null);
+    alert("Plan assigned and invoice created successfully!");
+    // We could optionally re-fetch member data here to show the new plan
+  };
+
   const handleEdit = (member) => {
     setEditingMember(member);
     setIsModalOpen(true);
@@ -50,7 +65,11 @@ const MembersPage = () => {
 
   const handleMemberUpdated = (updatedMember) => {
     // Find the member in the list and replace it with the updated data
-    setMembers(members.map(member => member.id === updatedMember.id ? updatedMember : member));
+    setMembers(
+      members.map((member) =>
+        member.id === updatedMember.id ? updatedMember : member
+      )
+    );
     setIsModalOpen(false); // Close the modal
     setEditingMember(null); // Clear the editing state
   };
@@ -105,8 +124,17 @@ const MembersPage = () => {
                     <span className="relative">{member.status}</span>
                   </span>
                 </td>
-                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                  <button onClick={() => handleEdit(member)} className="text-indigo-600 hover:text-indigo-900 mr-4">
+                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                  <button
+                    onClick={() => openAssignModal(member)}
+                    className="text-indigo-600 hover:text-indigo-900 mr-4"
+                  >
+                    Assign Plan
+                  </button>
+                  <button
+                    onClick={() => handleEdit(member)}
+                    className="text-indigo-600 hover:text-indigo-900 mr-4"
+                  >
                     Edit
                   </button>
                   <button
@@ -121,8 +149,21 @@ const MembersPage = () => {
           </tbody>
         </table>
       </div>
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Edit Member">
-        <EditMemberForm member={editingMember} onFinished={handleMemberUpdated} />
+      <AssignPlanModal
+        isOpen={isAssignModalOpen}
+        onClose={() => setIsAssignModalOpen(false)}
+        member={selectedMember}
+        onPlanAssigned={handlePlanAssigned}
+      />
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Edit Member"
+      >
+        <EditMemberForm
+          member={editingMember}
+          onFinished={handleMemberUpdated}
+        />
       </Modal>
     </div>
   );

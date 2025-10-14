@@ -4,6 +4,42 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 const router = express.Router();
 
+router.get('/', async (req, res) => {
+    try {
+        const invoices = await prisma.invoice.findMany({
+            include: {
+                member: { // Include the member details in the response
+                    select: {
+                        fullName: true,
+                    },
+                },
+            },
+            orderBy: {
+                dueDate: 'desc',
+            },
+        });
+        res.json(invoices);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch invoices.' });
+    }
+});
+
+// --- MARK AN INVOICE AS PAID ---
+router.put('/:id/pay', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const updatedInvoice = await prisma.invoice.update({
+            where: { id: parseInt(id) },
+            data: { status: 'Paid' },
+        });
+        res.json(updatedInvoice);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to update invoice status.' });
+    }
+});
+
 // --- ASSIGN PLAN & CREATE INVOICE ---
 router.post('/assign', async (req, res) => {
     const { memberId, planId } = req.body;
