@@ -13,6 +13,7 @@ import EquipmentPage from "./pages/EquipmentPage";
 import ProfilePage from "./pages/ProfilePage";
 import MemberLoginPage from "./pages/MemberLoginPage";
 import MemberDashboard from "./pages/MemberDashboard";
+import MemberSchedulePage from "./pages/MemberSchedulePage";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             <Route path="/member/login" element={<MemberLoginPage />} />
             {/* We would also need a protected route for members */}
             <Route path="/member/dashboard" element={<MemberDashboard />} />
+            <Route path="/member/schedule" element={<MemberSchedulePage />} />
           </Routes>
         </main>
       </div>

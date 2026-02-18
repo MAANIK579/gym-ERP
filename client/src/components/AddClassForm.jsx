@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+
 
 const AddClassForm = ({ onClassAdded }) => {
     const [formData, setFormData] = useState({
@@ -7,24 +9,39 @@ const AddClassForm = ({ onClassAdded }) => {
         trainerName: '',
         startTime: '',
         endTime: '',
-        capacity: ''
+        capacity: '',
+        memberId: '' // New field for member assignment
     });
+    const [members, setMembers] = useState([]);
+    const [loadingMembers, setLoadingMembers] = useState(true);
+
+    useEffect(() => {
+        // Fetch members for dropdown
+        axios.get('http://localhost:5000/api/members')
+            .then(res => setMembers(res.data))
+            .catch(() => setMembers([]))
+            .finally(() => setLoadingMembers(false));
+    }, []);
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prevState => ({ ...prevState, [name]: value }));
     };
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/classes', {
+            const payload = {
                 ...formData,
-                capacity: parseInt(formData.capacity) // Ensure capacity is a number
-            });
-            onClassAdded(response.data); // Notify parent component
-            // Reset form
-            setFormData({ title: '', trainerName: '', startTime: '', endTime: '', capacity: '' });
+                capacity: parseInt(formData.capacity),
+                memberId: formData.memberId ? formData.memberId : null
+            };
+            if (!payload.memberId) delete payload.memberId;
+            const response = await axios.post('http://localhost:5000/api/classes', payload);
+            onClassAdded(response.data);
+            setFormData({ title: '', trainerName: '', startTime: '', endTime: '', capacity: '', memberId: '' });
         } catch (error) {
             console.error('Error adding class:', error);
             alert('Failed to add class. Please check the details and try again.');
@@ -59,6 +76,25 @@ const AddClassForm = ({ onClassAdded }) => {
                 <div>
                     <label htmlFor="endTime" className="block text-gray-200 font-semibold mb-2">End Time</label>
                     <input type="datetime-local" name="endTime" value={formData.endTime} onChange={handleChange} className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-secondary-dark text-white focus:outline-none focus:ring-2 focus:ring-accent" required />
+                </div>
+                {/* Assign to Member (optional) */}
+                <div className="md:col-span-2">
+                    <label htmlFor="memberId" className="block text-gray-200 font-semibold mb-2">Assign to Member (optional)</label>
+                    <select
+                        name="memberId"
+                        value={formData.memberId}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-700 rounded-lg bg-secondary-dark text-white focus:outline-none focus:ring-2 focus:ring-accent"
+                    >
+                        <option value="">-- Group Class (All Members) --</option>
+                        {loadingMembers ? (
+                            <option>Loading members...</option>
+                        ) : (
+                            members.map(member => (
+                                <option key={member.id} value={member.id}>{member.fullName} ({member.email})</option>
+                            ))
+                        )}
+                    </select>
                 </div>
                 {/* Submit Button */}
                 <div className="md:col-span-2">

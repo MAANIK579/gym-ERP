@@ -20,22 +20,41 @@ router.get('/', async (req, res) => {
 
 // --- CREATE A NEW CLASS ---
 router.post('/', async (req, res) => {
-    const { title, trainerName, startTime, endTime, capacity } = req.body;
+    const { title, trainerName, startTime, endTime, capacity, memberId } = req.body;
 
     if (!title || !startTime || !endTime || !capacity) {
         return res.status(400).json({ error: 'All fields are required.' });
     }
 
     try {
+        console.log('Received payload for class creation:', req.body);
         const newClass = await prisma.class.create({
             data: {
                 title,
                 trainerName,
-                startTime: new Date(startTime), // Ensure string is converted to DateTime
+                startTime: new Date(startTime),
                 endTime: new Date(endTime),
                 capacity: parseInt(capacity),
             },
         });
+
+        // If a valid memberId is provided, create a MemberSchedule for that member
+        const memberIdInt = parseInt(memberId);
+        console.log('Parsed memberId:', memberIdInt);
+        if (!isNaN(memberIdInt) && memberIdInt > 0) {
+            const scheduleData = {
+                title: title,
+                description: `Trainer: ${trainerName || 'TBA'} | Class`,
+                date: new Date(startTime),
+                startTime: new Date(startTime).toISOString().slice(11, 16),
+                endTime: new Date(endTime).toISOString().slice(11, 16),
+                type: 'Class',
+                memberId: memberIdInt,
+            };
+            console.log('Creating MemberSchedule with:', scheduleData);
+            await prisma.memberSchedule.create({ data: scheduleData });
+        }
+
         res.status(201).json(newClass);
     } catch (error) {
         console.error(error);

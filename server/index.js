@@ -11,6 +11,7 @@ import authRoutes from './routes/auth.js';
 import equipmentRoutes from './routes/equipment.js';
 import memberAuthRoutes from './routes/memberAuth.js';
 import myProfileRoutes from './routes/myProfile.js';
+import scheduleRoutes from './routes/schedule.js';
 
 
 const app = express();
@@ -31,6 +32,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/equipment', equipmentRoutes);
 app.use('/api/member-auth', memberAuthRoutes);
 app.use('/api/my-profile', myProfileRoutes);
+app.use('/api/schedule', scheduleRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

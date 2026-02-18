@@ -35,9 +35,17 @@ const MemberDashboard = () => {
   const [greeting, setGreeting] = useState("");
   const [showActivationAlert, setShowActivationAlert] = useState(false);
   const [activatedPlan, setActivatedPlan] = useState(null);
+  const [upcomingSchedules, setUpcomingSchedules] = useState([]);
+  const [assignedClasses, setAssignedClasses] = useState([]);
   const navigate = useNavigate();
 
-  const member = JSON.parse(localStorage.getItem("member"));
+  const member = React.useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("member"));
+    } catch {
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
     // Set Greeting based on time of day
@@ -50,37 +58,51 @@ const MemberDashboard = () => {
       navigate("/member/login");
       return;
     }
-    const fetchProfileData = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:5000/api/my-profile/${member.id}`
-        );
-        setProfileData(response.data);
 
-        // Check for recently paid invoices (within last 5 minutes)
-        const recentlyPaidInvoice = response.data.invoices.find((invoice) => {
+    const fetchAll = async () => {
+      try {
+        // Profile
+        const profileRes = await axios.get(`http://localhost:5000/api/my-profile/${member.id}`);
+        setProfileData(profileRes.data);
+
+        // Upcoming Schedules
+        try {
+          const upRes = await axios.get(`http://localhost:5000/api/schedule/member/${member.id}/upcoming`);
+          setUpcomingSchedules(upRes.data);
+        } catch (error) {
+          setUpcomingSchedules([]);
+        }
+
+        // Assigned Classes
+        try {
+          const acRes = await axios.get(`http://localhost:5000/api/schedule/member/${member.id}`);
+          const now = new Date();
+          setAssignedClasses(acRes.data.filter(s => s.type === 'Class' && new Date(s.date) >= now));
+        } catch (error) {
+          setAssignedClasses([]);
+        }
+
+        // Activation Alert
+        const recentlyPaidInvoice = profileRes.data.invoices.find((invoice) => {
           const isPaid = invoice.status === "Paid";
-          const paidRecently =
-            moment().diff(moment(invoice.dueDate), "minutes") < 5;
+          const paidRecently = moment().diff(moment(invoice.dueDate), "minutes") < 5;
           return isPaid && paidRecently;
         });
-
-        if (recentlyPaidInvoice && response.data.memberDetails.plan) {
-          setActivatedPlan(response.data.memberDetails.plan);
+        if (recentlyPaidInvoice && profileRes.data.memberDetails.plan) {
+          setActivatedPlan(profileRes.data.memberDetails.plan);
           setShowActivationAlert(true);
-
-          // Auto-hide after 10 seconds
-          setTimeout(() => {
-            setShowActivationAlert(false);
-          }, 10000);
+          setTimeout(() => setShowActivationAlert(false), 10000);
         }
       } catch (error) {
-        console.error("Failed to fetch profile data:", error);
+        setProfileData(null);
+        setUpcomingSchedules([]);
+        setAssignedClasses([]);
+        console.error("Failed to fetch dashboard data:", error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchProfileData();
+    fetchAll();
   }, [member, navigate]);
 
   const handleLogout = () => {
@@ -232,8 +254,8 @@ const MemberDashboard = () => {
             subtext={
               kpis?.planExpiryDate
                 ? `Expires on ${moment(kpis.planExpiryDate).format(
-                    "DD MMM YYYY"
-                  )}`
+                  "DD MMM YYYY"
+                )}`
                 : ""
             }
             icon={
@@ -277,16 +299,18 @@ const MemberDashboard = () => {
               </p>
             </div>
 
-            {/* Upcoming Classes */}
+
+            {/* Gym Class Schedule */}
             <div className="bg-secondary-dark p-6 rounded-lg shadow-lg">
               <h3 className="text-xl font-semibold mb-4 text-accent">
-                This Week's Schedule
+                Gym Class Schedule
               </h3>
-              {(memberDetails?.bookings || []).length > 0 ? (
+              {((memberDetails?.bookings?.length || 0) + assignedClasses.length) > 0 ? (
                 <ul className="space-y-4">
-                  {memberDetails.bookings.map((booking) => (
+                  {/* Booked group classes */}
+                  {(memberDetails.bookings || []).map((booking) => (
                     <li
-                      key={booking.id}
+                      key={"booking-" + booking.id}
                       className="p-4 bg-primary-dark rounded-md flex items-center justify-between transition-all hover:bg-gray-800"
                     >
                       <div>
@@ -303,38 +327,110 @@ const MemberDashboard = () => {
                       </span>
                     </li>
                   ))}
+                  {/* Assigned personal classes */}
+                  {assignedClasses.map((cls) => (
+                    <li
+                      key={"assigned-" + cls.id}
+                      className="p-4 bg-primary-dark rounded-md flex items-center justify-between border-l-4 border-accent transition-all hover:bg-gray-800"
+                    >
+                      <div>
+                        <p className="font-bold text-lg text-white">
+                          {cls.title} <span className="ml-2 text-xs bg-accent text-white px-2 py-1 rounded">Personal</span>
+                        </p>
+                        <p className="text-sm text-gray-400">
+                          {cls.description}
+                          {cls.startTime && ` - ${cls.startTime}`}
+                        </p>
+                      </div>
+                      <span className="text-base font-semibold text-gray-300">
+                        {moment(cls.date).format("dddd, MMM DD")}
+                      </span>
+                    </li>
+                  ))}
                 </ul>
               ) : (
                 <p className="text-gray-400">
-                  You have no upcoming classes booked. Time to get active!
+                  You have no upcoming classes booked or assigned. Time to get active!
                 </p>
+              )}
+            </div>
+
+            {/* Personal Schedule */}
+            <div className="bg-secondary-dark p-6 rounded-lg shadow-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold text-accent">
+                  My Personal Schedule
+                </h3>
+                <button
+                  onClick={() => navigate('/member/schedule')}
+                  className="text-sm bg-accent hover:bg-accent-dark text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  Manage Schedule
+                </button>
+              </div>
+              {upcomingSchedules.length > 0 ? (
+                <ul className="space-y-3">
+                  {upcomingSchedules.slice(0, 5).map((schedule) => {
+                    const getTypeColor = (type) => {
+                      const colors = {
+                        'Personal': 'bg-blue-500',
+                        'Workout': 'bg-green-500',
+                        'Diet': 'bg-orange-500',
+                        'Cardio': 'bg-red-500',
+                        'Strength Training': 'bg-purple-500',
+                        'Rest Day': 'bg-gray-500',
+                        'Other': 'bg-yellow-500'
+                      };
+                      return colors[type] || 'bg-gray-500';
+                    };
+
+                    return (
+                      <li
+                        key={schedule.id}
+                        className="p-4 bg-primary-dark rounded-md transition-all hover:bg-gray-800"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-3 h-3 rounded-full ${getTypeColor(schedule.type)}`}></div>
+                            <div>
+                              <p className="font-bold text-white">{schedule.title}</p>
+                              <p className="text-sm text-gray-400">
+                                {schedule.startTime} - {schedule.endTime}
+                                {schedule.description && ` • ${schedule.description.substring(0, 50)}${schedule.description.length > 50 ? '...' : ''}`}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-sm font-semibold text-gray-300">
+                              {moment(schedule.date).format("MMM DD")}
+                            </span>
+                            <p className="text-xs text-gray-400">
+                              {moment(schedule.date).format("dddd")}
+                            </p>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-400 mb-4">
+                    You haven't created any personal schedules yet.
+                  </p>
+                  <button
+                    onClick={() => navigate('/member/schedule')}
+                    className="bg-accent hover:bg-accent-dark text-white px-6 py-2 rounded-lg transition-colors"
+                  >
+                    Create Your First Schedule
+                  </button>
+                </div>
               )}
             </div>
           </div>
 
           {/* Right Column: Plans & History */}
           <div className="space-y-8">
-            {/* Workout & Diet Plans */}
-            <div className="bg-secondary-dark p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold mb-4 text-accent">
-                My Plans
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-bold text-white">Workout Plan</h4>
-                  <p className="text-sm text-gray-400 p-3 bg-primary-dark rounded mt-1 whitespace-pre-wrap">
-                    {latestWorkout?.details || "No workout plan assigned yet."}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-bold text-white">Diet Plan</h4>
-                  <p className="text-sm text-gray-400 p-3 bg-primary-dark rounded mt-1 whitespace-pre-wrap">
-                    {latestDiet?.details || "No diet plan assigned yet."}
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* Recent Payments */}
             <div className="bg-secondary-dark p-6 rounded-lg shadow-lg">
               <h3 className="text-xl font-semibold mb-4 text-accent">
@@ -350,11 +446,10 @@ const MemberDashboard = () => {
                       Invoice #{invoice.id} - ₹{invoice.amount}
                     </p>
                     <span
-                      className={`px-2 py-1 text-xs font-bold rounded-full ${
-                        invoice.status === "Paid"
-                          ? "bg-green-200 text-green-900"
-                          : "bg-yellow-200 text-yellow-900"
-                      }`}
+                      className={`px-2 py-1 text-xs font-bold rounded-full ${invoice.status === "Paid"
+                        ? "bg-green-200 text-green-900"
+                        : "bg-yellow-200 text-yellow-900"
+                        }`}
                     >
                       {invoice.status}
                     </span>

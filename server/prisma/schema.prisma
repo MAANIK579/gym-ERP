@@ -21,6 +21,7 @@ model Member {
   bookings         Booking[]
   workoutPlans     WorkoutPlan[]
   dietPlans        DietPlan[]
+  memberSchedules  MemberSchedule[]
 }
 
 model MembershipPlan {
@@ -100,4 +101,20 @@ model DietPlan {
   createdAt DateTime @default(now())
   memberId  Int
   member    Member   @relation(fields: [memberId], references: [id])
+}
+
+model MemberSchedule {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?  @db.Text
+  date        DateTime
+  startTime   String   // Format: "HH:MM" (24-hour)
+  endTime     String   // Format: "HH:MM" (24-hour)
+  type        String   @default("Personal") // "Personal", "Workout", "Diet", "Other"
+  isRecurring Boolean  @default(false)
+  recurringDays String? // JSON array of days like ["Monday", "Wednesday", "Friday"]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  memberId    Int
+  member      Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
 }

@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get('/:memberId', async (req, res) => {
     const { memberId } = req.params;
-    
+
     try {
         // Fetch member details with relations
         const memberDetails = await prisma.member.findUnique({
@@ -15,10 +15,10 @@ router.get('/:memberId', async (req, res) => {
             include: {
                 plan: true,
                 bookings: {
-                    where: { 
-                        class: { 
-                            startTime: { gte: new Date() } 
-                        } 
+                    where: {
+                        class: {
+                            startTime: { gte: new Date() }
+                        }
                     },
                     include: { class: true },
                     orderBy: { class: { startTime: 'asc' } },
@@ -38,7 +38,7 @@ router.get('/:memberId', async (req, res) => {
 
         // Calculate pending invoices count
         const pendingInvoicesCount = invoices.filter(inv => inv.status === 'Pending').length;
-        
+
         // Calculate total amount paid
         const totalAmountPaidResult = await prisma.invoice.aggregate({
             _sum: { amount: true },
@@ -49,7 +49,7 @@ router.get('/:memberId', async (req, res) => {
         // Calculate plan expiry date based on the most recent paid invoice
         let planExpiryDate = null;
         let daysRemaining = null;
-        
+
         if (memberDetails.plan) {
             const lastPaidInvoice = await prisma.invoice.findFirst({
                 where: { memberId: parseInt(memberId), status: 'Paid' },
@@ -65,11 +65,7 @@ router.get('/:memberId', async (req, res) => {
 
         // Return data with safe structure
         res.json({
-            memberDetails: {
-                ...memberDetails,
-                workoutPlans: [], // Add these if you have workout/diet plan models
-                dietPlans: [],    // Otherwise keep as empty arrays
-            },
+            memberDetails,
             invoices,
             kpis: {
                 pendingInvoicesCount,
@@ -81,9 +77,9 @@ router.get('/:memberId', async (req, res) => {
 
     } catch (error) {
         console.error("Error fetching profile data:", error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Could not fetch member profile.',
-            details: error.message 
+            details: error.message
         });
     }
 });
